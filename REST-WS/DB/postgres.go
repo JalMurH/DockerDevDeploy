@@ -22,12 +22,35 @@ func NewPostgresRepo(url string) (*PostgresRepo, error) {
 }
 
 func (repo *PostgresRepo) InsertUser(ctx context.Context, user *models.User) error {
-	_, err := repo.db.ExecContext(ctx, "INSERT INTO users (email, password) VALUES($1,$2)", user.Email, user.Password)
+	_, err := repo.db.ExecContext(ctx, "INSERT INTO users (id, email, password) VALUES($1,$2, $3)", user.Id, user.Email, user.Password)
 	return err
 }
 
 func (repo *PostgresRepo) GetUserById(ctx context.Context, id string) (*models.User, error) {
 	rows, err := repo.db.QueryContext(ctx, "SELECT id email FORM users WHERE id=$1", id)
+
+	defer func() {
+		err = rows.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	var user = models.User{}
+
+	for rows.Next() {
+		if err = rows.Scan(&user.Id, &user.Email); err == nil {
+			return &user, nil
+		}
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (repo *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	rows, err := repo.db.QueryContext(ctx, "SELECT id, email, password FORM users WHERE email=$1", email)
 
 	defer func() {
 		err = rows.Close()

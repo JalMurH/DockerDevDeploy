@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	db "github.com/JalMurH/DockerDevDeploy/rest-ws/DB"
+	"github.com/JalMurH/DockerDevDeploy/rest-ws/repository"
 	"github.com/gorilla/mux"
 )
 
@@ -50,8 +52,17 @@ func NewServer(ctx context.Context, config *Config) (*Broker, error) {
 func (b *Broker) Start(binder func(s Server, r *mux.Router)) {
 	b.router = mux.NewRouter()
 	binder(b, b.router)
+	repo, err := db.NewPostgresRepo(b.config.DBURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	repository.SetRepo(repo)
 	log.Println("Staring server on port:", b.Config().Port)
 	if err := http.ListenAndServe(b.config.Port, b.router); err != nil {
 		log.Fatal("Exit ListenAndServe", err)
 	}
+}
+
+func NewPostgresRepo() {
+	panic("unimplemented")
 }
