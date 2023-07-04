@@ -26,8 +26,13 @@ func (repo *PostgresRepo) InsertUser(ctx context.Context, user *models.User) err
 	return err
 }
 
+func (repo *PostgresRepo) InsertPost(ctx context.Context, post *models.Post) error {
+	_, err := repo.db.ExecContext(ctx, "INSERT INTO posts (id, post_content, user_id) VALUES($1,$2, $3)", post.Id, post.PostContent, post.UserId)
+	return err
+}
+
 func (repo *PostgresRepo) GetUserById(ctx context.Context, id string) (*models.User, error) {
-	rows, err := repo.db.QueryContext(ctx, "SELECT id email FORM users WHERE id=$1", id)
+	rows, err := repo.db.QueryContext(ctx, "SELECT id, email FROM users WHERE id=$1", id)
 
 	defer func() {
 		err = rows.Close()
@@ -50,7 +55,7 @@ func (repo *PostgresRepo) GetUserById(ctx context.Context, id string) (*models.U
 }
 
 func (repo *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	rows, err := repo.db.QueryContext(ctx, "SELECT id, email, password FORM users WHERE email=$1", email)
+	rows, err := repo.db.QueryContext(ctx, "SELECT id, email, password FROM users WHERE email=$1", email)
 
 	defer func() {
 		err = rows.Close()
@@ -62,7 +67,7 @@ func (repo *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (*mo
 	var user = models.User{}
 
 	for rows.Next() {
-		if err = rows.Scan(&user.Id, &user.Email); err == nil {
+		if err = rows.Scan(&user.Id, &user.Email, &user.Password); err == nil {
 			return &user, nil
 		}
 	}

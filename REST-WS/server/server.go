@@ -11,26 +11,26 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Config struct {
+type Config struct { //se crea la estructura de la configuracion del server
 	Port      string
 	JWTSecret string
 	DBURL     string
 }
 
-type Server interface {
+type Server interface { //al crear una interface Server garantizamos que las funciones que hagan uso de la funcion config seran consideradas Server gracias a la herencia que go meneja de manera implicita
 	Config() *Config
 }
 
-type Broker struct {
+type Broker struct { //la estructura brocker sera una instancia de Server debido a que usa Config y debera tener un router que hace parte de la libreria gorilla mux
 	config *Config
 	router *mux.Router
 }
 
-func (b *Broker) Config() *Config {
+func (b *Broker) Config() *Config { // resiver function que es Config y asi brocker es considerado herencia de server
 	return b.config
 }
 
-func NewServer(ctx context.Context, config *Config) (*Broker, error) {
+func NewServer(ctx context.Context, config *Config) (*Broker, error) { //
 	if config.Port == "" {
 		return nil, errors.New("port is required")
 	}
