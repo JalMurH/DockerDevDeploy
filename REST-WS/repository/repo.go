@@ -6,7 +6,7 @@ import (
 	"github.com/JalMurH/DockerDevDeploy/rest-ws/models"
 )
 
-type Repository interface {
+type Repository interface { //interface que determina que es repositorio desde que cumpla con tener las siguientes funciones
 	InsertUser(ctx context.Context, user *models.User) error
 	GetUserById(ctx context.Context, id string) (*models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)

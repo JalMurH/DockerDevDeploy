@@ -30,7 +30,7 @@ func (b *Broker) Config() *Config { // resiver function que es Config y asi broc
 	return b.config
 }
 
-func NewServer(ctx context.Context, config *Config) (*Broker, error) { //
+func NewServer(ctx context.Context, config *Config) (*Broker, error) { //validaciones de configuracion encesarias para crear un servidor
 	if config.Port == "" {
 		return nil, errors.New("port is required")
 	}
@@ -49,7 +49,7 @@ func NewServer(ctx context.Context, config *Config) (*Broker, error) { //
 	return broker, nil
 }
 
-func (b *Broker) Start(binder func(s Server, r *mux.Router)) {
+func (b *Broker) Start(binder func(s Server, r *mux.Router)) { // configuracion del souter para acceder a la base de datos
 	b.router = mux.NewRouter()
 	binder(b, b.router)
 	repo, err := db.NewPostgresRepo(b.config.DBURL)
