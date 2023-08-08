@@ -58,6 +58,11 @@ func InserPostHandler(s server.Server) http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+			var postMessage = models.WebSocketMessage{
+				Type:    "PostCreated",
+				PayLoad: post,
+			}
+			s.Hub().BroadCast(postMessage, nil)
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(PostResponse{
 				Id:          post.Id,

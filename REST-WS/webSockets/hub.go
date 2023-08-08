@@ -1,6 +1,7 @@
 package websockets
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
@@ -76,5 +77,12 @@ func (hub *Hub) Run() {
 		case client := <-hub.unregister:
 			hub.onDiscconect(client)
 		}
+	}
+}
+
+func (hub *Hub) BroadCast(message interface{}, ignore *Client) {
+	data, _ := json.Marshal(message)
+	for _, client := range hub.clients {
+		client.outbound <- data
 	}
 }

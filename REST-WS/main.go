@@ -9,7 +9,6 @@ import (
 	"github.com/JalMurH/DockerDevDeploy/rest-ws/handlers"
 	"github.com/JalMurH/DockerDevDeploy/rest-ws/middelware"
 	"github.com/JalMurH/DockerDevDeploy/rest-ws/server"
-	websockets "github.com/JalMurH/DockerDevDeploy/rest-ws/webSockets"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -39,16 +38,16 @@ func main() {
 }
 
 func BindRoutes(s server.Server, r *mux.Router) { //nuestro metodo de routeo
-	hub := websockets.NewHub()
-	r.Use(middelware.CheckAuthMiddleWare(s))                           //para cada un de las siguientes rutas va a usar el middleware para validar el jsonwebtoken
+	api := r.PathPrefix("/api/v1").Subrouter()                         //los que usen api seran protejidos por el middleware
+	api.Use(middelware.CheckAuthMiddleWare(s))                         //para cada un de las siguientes rutas va a usar el middleware para validar el jsonwebtoken
 	r.HandleFunc("/", handlers.HomeHandler(s)).Methods(http.MethodGet) //ruta principal o home
 	r.HandleFunc("/login", handlers.LoginHandler(s)).Methods(http.MethodPost)
 	r.HandleFunc("/singup", handlers.SingUpHandler(s)).Methods(http.MethodPost)
-	r.HandleFunc("/me", handlers.MeddleWareHandler(s)).Methods(http.MethodGet)
-	r.HandleFunc("/post", handlers.InserPostHandler(s)).Methods(http.MethodPost)         //C
-	r.HandleFunc("/post/{id}", handlers.GetPostByIdHandler(s)).Methods(http.MethodGet)   //R
-	r.HandleFunc("/post/{id}", handlers.UpdatePostHandler(s)).Methods(http.MethodPut)    //U
-	r.HandleFunc("/post/{id}", handlers.DeletePostHandler(s)).Methods(http.MethodDelete) //D
-	r.HandleFunc("/posts", handlers.ListPostHandler(s)).Methods(http.MethodGet)          //lista de los posts existentes
-	r.HandleFunc("/ws", hub.HandleWebSocket)
+	api.HandleFunc("/me", handlers.MeddleWareHandler(s)).Methods(http.MethodGet)           //para obtenerla data del usuario que envia el token
+	api.HandleFunc("/post", handlers.InserPostHandler(s)).Methods(http.MethodPost)         //C
+	r.HandleFunc("/post/{id}", handlers.GetPostByIdHandler(s)).Methods(http.MethodGet)     //R
+	api.HandleFunc("/post/{id}", handlers.UpdatePostHandler(s)).Methods(http.MethodPut)    //U
+	api.HandleFunc("/post/{id}", handlers.DeletePostHandler(s)).Methods(http.MethodDelete) //D
+	r.HandleFunc("/posts", handlers.ListPostHandler(s)).Methods(http.MethodGet)            //lista de los posts existentes
+	r.HandleFunc("/ws", s.Hub().HandleWebSocket)
 }
